@@ -3,7 +3,7 @@
 ![Codenotch](docs/design/codenotch-banner.png)
 
 [![CI](https://github.com/vinzdg/codenotch/actions/workflows/ci.yml/badge.svg)](https://github.com/vinzdg/codenotch/actions/workflows/ci.yml)
-![Platform](https://img.shields.io/badge/platform-macOS%2026%2B-black)
+![Platform](https://img.shields.io/badge/platform-macOS%2013.7%2B-black)
 ![Swift](https://img.shields.io/badge/swift-5-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -43,7 +43,7 @@ xattr -dr com.apple.quarantine /Applications/Codenotch.app
 
 If macOS says the app is *damaged*, that is the quarantine flag rather than a bad download — run the command above.
 
-Universal binary. macOS 15 or later. To build and install a copy from source
+Universal binary. macOS 13.7 or later. To build and install a copy from source
 instead, see [Building](#building).
 
 ## Windows

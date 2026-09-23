@@ -2,7 +2,7 @@ name: Codenotch
 options:
   bundleIdPrefix: com.vinz
   deploymentTarget:
-    macOS: "15.0"
+    macOS: "13.7"
   createIntermediateGroups: true
   defaultLocalization: en
 
@@ -83,7 +83,7 @@ targets:
           - zh-Hant
           - uk
           - uz
-        LSMinimumSystemVersion: "15.0"
+        LSMinimumSystemVersion: "13.7"
         # Sources/Info.plist is *generated* from this block, so editing that
         # file directly is undone by the next `make gen`. Pointing both at the
         # build settings keeps one place to bump.

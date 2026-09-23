@@ -29,6 +29,7 @@ struct MoveHandle: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.notchSurfaceStyle) private var surfaceStyle
     @Environment(\.codenotchReduceTransparency) private var reduceTransparency
+    @State private var pressScale: CGFloat = 1
 
     private var glassy: Bool { surfaceStyle.isGlass && !reduceTransparency }
 
@@ -177,12 +178,19 @@ struct MoveHandle: View {
             ),
             value: isArmed
         )
-        .keyframeAnimator(initialValue: CGFloat(1), trigger: spins) { handle, scale in
-            handle.scaleEffect(scale)
-        } keyframes: { _ in
-            SpringKeyframe(reduceMotion ? 1 : Self.squeezeScale,
-                           duration: 0.09, spring: .snappy)
-            SpringKeyframe(1, duration: 0.34, spring: .bouncy)
+        // KeyframeAnimator is macOS 14+. A spring on the existing state-driven
+        // transforms gives macOS 13.7 the same responsive press without using
+        // an unavailable API.
+        .scaleEffect(pressScale)
+        .animation(.spring(response: 0.22, dampingFraction: 0.72), value: pressScale)
+        .onChange(of: spins) { _ in
+            guard !reduceMotion else { return }
+            pressScale = Self.squeezeScale
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.09) {
+                withAnimation(.spring(response: 0.34, dampingFraction: 0.82)) {
+                    pressScale = 1
+                }
+            }
         }
     }
 }

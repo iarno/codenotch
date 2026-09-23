@@ -4,7 +4,7 @@ import SwiftUI
 import Combine
 
 /// A Liquid Glass background that falls back to a regular material on macOS
-/// 15, where `glassEffect` does not exist. The visual difference is minor — the
+/// 13.7, where `glassEffect` does not exist. The visual difference is minor — the
 /// sidebar gets a standard vibrancy material instead of the glass tint — and
 /// the layout and interactions are unchanged.
 extension View {
@@ -181,8 +181,7 @@ private struct SettingsSidebarRow: View {
 
     @State private var isHovered = false
     @State private var isPressed = false
-    /// Bumped each time the row becomes selected, to play the icon's bounce once.
-    @State private var bounce = 0
+    @State private var iconScale: CGFloat = 1
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private static let pill = RoundedRectangle(cornerRadius: 8, style: .continuous)
@@ -203,7 +202,7 @@ private struct SettingsSidebarRow: View {
                 Text("\(count)")
                     .font(.system(size: 11, weight: .medium).monospacedDigit())
                     .foregroundStyle(.white.opacity(isHovered || isSelected ? 0.55 : 0.42))
-                    .contentTransition(.numericText())
+                    .codenotchNumericTextTransition()
             }
             if let disclosure {
                 DisclosureChevron(isExpanded: disclosure)
@@ -249,7 +248,14 @@ private struct SettingsSidebarRow: View {
                 }
         )
         .onChange(of: isSelected) { selected in
-            if selected { bounce += 1 }
+            guard selected else { return }
+            guard !reduceMotion else { return }
+            iconScale = 1.18
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.14) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    iconScale = 1
+                }
+            }
         }
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
@@ -260,16 +266,13 @@ private struct SettingsSidebarRow: View {
     private var icon: some View {
         if let logo = section.logo {
             ProviderGlyphView(glyph: logo, size: 14)
-                .keyframeAnimator(initialValue: 1.0, trigger: bounce) { content, scale in
-                    content.scaleEffect(scale)
-                } keyframes: { _ in
-                    SpringKeyframe(1.18, duration: 0.14)
-                    SpringKeyframe(1.0, duration: 0.3, spring: .bouncy)
-                }
+                .scaleEffect(iconScale)
+                .animation(.spring(response: 0.22, dampingFraction: 0.65), value: iconScale)
         } else {
             Image(systemName: section.icon)
                 .font(.system(size: indent ? 12 : 13, weight: .regular))
-                .symbolEffect(.bounce, value: bounce)
+                .scaleEffect(iconScale)
+                .animation(.spring(response: 0.22, dampingFraction: 0.65), value: iconScale)
         }
     }
 }
@@ -763,8 +766,8 @@ struct SettingsView: View {
         .formStyle(.grouped)
         // A row switched off jumps from one group to the other. Scoped to that
         // one value so nothing else on the page inherits an animation.
-        .animation(.snappy(duration: 0.25), value: preferences.connectedProviders)
-        .animation(.snappy(duration: 0.25), value: preferences.disabledModels)
+        .animation(.spring(response: 0.28, dampingFraction: 0.82), value: preferences.connectedProviders)
+        .animation(.spring(response: 0.28, dampingFraction: 0.82), value: preferences.disabledModels)
     }
 
     // One pane, because they are one question: what Codenotch looks like and
@@ -1743,7 +1746,7 @@ private struct AccountRow: View {
                             TextField(L10n.t("Name"), text: $draftName, prompt: Text(provider.name))
                                 .textFieldStyle(.roundedBorder)
                                 .onSubmit { isRenaming = false }
-                                .onChange(of: draftName) { _, name in
+                                .onChange(of: draftName) { name in
                                     preferences.setNickname(name, for: provider.id)
                                 }
                             Text(L10n.t("What the notch, the menu bar and notifications call this account. Empty goes back to \(provider.name)."))
@@ -1860,7 +1863,7 @@ private struct AccountRow: View {
             // out of the way is what says where the ring will land.
             guard isOrderable, entered, let moved = drag.id, moved != provider.id
             else { return }
-            withAnimation(.snappy(duration: 0.22)) { _ = takePlaceOf(moved) }
+            withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) { _ = takePlaceOf(moved) }
         }
     }
 

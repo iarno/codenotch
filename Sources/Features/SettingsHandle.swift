@@ -29,6 +29,7 @@ struct SettingsOrb: View {
     var spins: Int = 0
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var pressScale: CGFloat = 1
 
     /// Which quarter of the circle the resting arc occupies.
     ///
@@ -173,12 +174,18 @@ struct SettingsOrb: View {
         // not exist here.
         //
         // Down fast and back slower: a press is sharp, a release settles.
-        .keyframeAnimator(initialValue: CGFloat(1), trigger: spins) { orb, scale in
-            orb.scaleEffect(scale)
-        } keyframes: { _ in
-            SpringKeyframe(reduceMotion ? 1 : Self.squeezeScale,
-                           duration: 0.09, spring: .snappy)
-            SpringKeyframe(1, duration: 0.34, spring: .bouncy)
+        // KeyframeAnimator is macOS 14+. Use the same state-driven spring on
+        // macOS 13.7, where the richer keyframe API is unavailable.
+        .scaleEffect(pressScale)
+        .animation(.spring(response: 0.22, dampingFraction: 0.72), value: pressScale)
+        .onChange(of: spins) { _ in
+            guard !reduceMotion else { return }
+            pressScale = Self.squeezeScale
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.09) {
+                withAnimation(.spring(response: 0.34, dampingFraction: 0.82)) {
+                    pressScale = 1
+                }
+            }
         }
     }
 }

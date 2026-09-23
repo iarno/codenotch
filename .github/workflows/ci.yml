@@ -7,12 +7,10 @@ on:
 
 jobs:
   test:
-    if: github.repository == 'vinzdg/codenotch'
     name: Unit tests
-    # macOS 26, because that is what the app targets. An older image ships an
-    # Xcode that cannot read the project at all — `objectVersion 77` is a
-    # format it does not know — long before it gets as far as the macOS 26
-    # deployment target or the Liquid Glass APIs the settings panel uses.
+    # Use the current macOS runner for its recent Xcode. The app itself targets
+    # macOS 13.7; the newer runner is only needed to generate and build the
+    # project with the repository's current Xcode project format.
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v7

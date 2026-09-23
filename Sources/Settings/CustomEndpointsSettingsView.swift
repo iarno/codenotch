@@ -66,7 +66,7 @@ struct CustomEndpointsSettingsView: View {
 
                     HStack(spacing: 8) {
                         Button {
-                            withAnimation(.snappy) {
+                            withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
                                 showTemplates.toggle()
                             }
                         } label: {
